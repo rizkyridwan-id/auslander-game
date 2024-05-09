@@ -13,11 +13,20 @@ class Player {
     }
 
     update() {
-        this.x += this.speed
+        if(this.game.keys.includes("ArrowLeft")) {
+            this.x -= this.speed
+        } 
+        if(this.game.keys.includes("ArrowRight")) {
+            this.x += this.speed
+        }
+
+        // boundaries
+        if (this.x < 0) this.x = 0
+        else if (this.x > this.game.width - this.width) this.x = this.game.width - this.width
     }
 }
 
-class Projectiles {
+class Projectile {
 
 }
 
@@ -31,6 +40,15 @@ class Game {
         this.width = canvas.width
         this.height = canvas.height
         this.player = new Player(this)
+        this.keys = []
+
+        window.addEventListener("keydown", (e) => {
+            if(!this.keys.includes(e.key)) this.keys.push(e.key)
+        })
+        window.addEventListener("keyup", (e) => {
+            const i = this.keys.indexOf(e.key)
+            if(i > -1) this.keys.splice(i, 1)
+        })
     }
 
     render(context) {
