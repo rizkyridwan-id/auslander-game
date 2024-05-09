@@ -21,13 +21,45 @@ class Player {
         }
 
         // boundaries
-        if (this.x < 0) this.x = 0
-        else if (this.x > this.game.width - this.width) this.x = this.game.width - this.width
+        if (this.x < -this.width * 0.45) this.x = -this.width * 0.45
+        else if (this.x > this.game.width - this.width * 0.55) this.x = this.game.width - this.width * 0.55
+    }
+
+    shoot() {   
+        const projectile = this.game.getProjectile()
+        if(projectile) projectile.start(this.x + this.width * 0.5, this.y)
     }
 }
 
 class Projectile {
 
+    constructor() {
+        this.width = 4
+        this.height = 20
+        this.speed = 20
+        this.x = 0
+        this.y = 0
+        this.free = true 
+    }
+    draw(context) {
+        if(!this.free)
+            context.fillRect(this.x, this.y, this.width, this.height)
+    }
+    update() {
+        if(!this.free) {
+            this.y -= this.speed
+            if(this.y < -this.height) this.reset()
+        }
+            
+    }
+    start(x, y) {
+        this.x = x - this.width * 0.5
+        this.y = y
+        this.free = false
+    }
+    reset() {
+        this.free = true
+    }
 }
 
 class Enemy {
@@ -42,8 +74,13 @@ class Game {
         this.player = new Player(this)
         this.keys = []
 
+        this.projectilesPool = []
+        this.numberOfProjectiles = 10 
+        this.createProjectiles()
+
         window.addEventListener("keydown", (e) => {
             if(!this.keys.includes(e.key)) this.keys.push(e.key)
+            if(e.key === "1") this.player.shoot()
         })
         window.addEventListener("keyup", (e) => {
             const i = this.keys.indexOf(e.key)
@@ -54,6 +91,23 @@ class Game {
     render(context) {
         this.player.draw(context)
         this.player.update()
+
+        this.projectilesPool.forEach(projectile => {
+            projectile.update()
+            projectile.draw(context)
+        })
+    }
+
+    createProjectiles() {
+        for(let i = 0; i < this.numberOfProjectiles; i++) {
+            this.projectilesPool.push(new Projectile())
+        }
+    }
+
+    getProjectile() {
+        for(let i = 0; i < this.projectilesPool.length; i++) {
+            if(this.projectilesPool[i].free) return this.projectilesPool[i]
+        }
     }
 }
 
