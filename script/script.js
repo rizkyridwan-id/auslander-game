@@ -212,11 +212,15 @@ class Game {
         this.isGameOver = false
 
         window.addEventListener("keydown", (e) => {
+            if(this.isGameOver) {
+                e.key === "r" && this.restart()
+                return
+            }
+
             if(e.key === "1" && !this.fired) this.player.shoot()
             this.fired = true
 
             if(!this.keys.includes(e.key)) this.keys.push(e.key)
-            if(e.key === "r" && this.isGameOver) this.restart()
         })
         window.addEventListener("keyup", (e) => {
             const i = this.keys.indexOf(e.key)
