@@ -72,6 +72,10 @@ class Projectile {
 class Enemy {
 
     constructor(game, relativeX, relativeY) {
+        if(this.constructor.name === Enemy.name) {
+            throw new Error("Base class cannot be called immediately")
+        }
+
         this.game = game
         this.width = this.game.enemySize
         this.height = this.game.enemySize
@@ -82,7 +86,7 @@ class Enemy {
         this.markedForDeletion = false
     }
     draw(context) {
-        context.strokeRect(this.x, this.y, this.width, this.height)
+        context.drawImage(this.image, this.frameX * this.game.enemySize, this.frameY * this.game.enemySize, this.game.enemySize, this.game.enemySize,this.x, this.y, this.width, this.height)
     }
     update(x, y) {
         this.x = x + this.relativeX
@@ -91,11 +95,18 @@ class Enemy {
         // projectile collision enemies 
         this.game.projectilesPool.forEach(projectile => {
             if(!projectile.free && this.game.checkCollision(this, projectile)) {
-                this.markedForDeletion = true
+                this.hit(1)
                 projectile.reset()
-                if(!this.game.isGameOver) this.game.score++
             }
         })
+
+        if(this.lives < 1) {
+            this.frameX++
+            if(this.frameX > this.maxFrame) {
+                this.markedForDeletion = true
+                if(!this.game.isGameOver) this.game.score+=this.maxLives
+            }
+        }
 
         // player collision enemies
         if(this.game.checkCollision(this, this.game.player)) {
@@ -111,6 +122,21 @@ class Enemy {
             this.markedForDeletion = true
         }
     }
+    hit(damage) {
+        this.lives-= damage
+    }
+}
+
+class Beetlemorph extends Enemy {
+    constructor(game, relativeX, relativeY) {
+        super(game, relativeX, relativeY)
+        this.image = document.getElementById("beetlemorph")
+        this.frameX = 0
+        this.frameY = Math.floor(Math.random() * 4)
+        this.maxFrame = 2;
+        this.lives = 1;
+        this.maxLives = this.lives
+    }
 }
 
 class Wave {
@@ -118,9 +144,9 @@ class Wave {
         this.game = game
         this.width = this.game.columns * this.game.enemySize
         this.height = this.game.rows * this.game.enemySize
-        this.x = 0
+        this.x = this.game.width * 0.5 - this.game.enemySize
         this.y = -this.height
-        this.speedX = 3
+        this.speedX = Math.random() < 0.5 ? -1 : 1
         this.speedY = 0
         this.nextY = 0
         this.enemies = []
@@ -151,7 +177,7 @@ class Wave {
             for(let x = 0; x < this.game.columns; x++) {
                 const relativeX = x * this.game.enemySize
                 const relativeY = y * this.game.enemySize
-                this.enemies.push(new Enemy(this.game, relativeX, relativeY))
+                this.enemies.push(new Beetlemorph(this.game, relativeX, relativeY))
             }
         }
     }
@@ -172,7 +198,7 @@ class Game {
 
         this.columns = 3
         this.rows = 3
-        this.enemySize = 60
+        this.enemySize = 80
 
         this.waves = []
         this.waves.push(new Wave(this))

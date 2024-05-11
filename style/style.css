@@ -14,3 +14,6 @@
     outline: 5px solid black;
     background: url(../assets/tilesets/background.png);
 }
+.hidden {
+    display: none;
+}
