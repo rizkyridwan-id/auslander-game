@@ -85,8 +85,14 @@ class Enemy {
             if(!projectile.free && this.game.checkCollision(this, projectile)) {
                 this.markedForDeletion = true
                 projectile.reset()
+                this.game.score++
             }
         })
+
+        if(this.y + this.height > this.game.height) {
+            this.game.isGameOver = true
+            this.markedForDeletion = true
+        }
     }
 }
 
@@ -150,6 +156,9 @@ class Game {
         this.waves = []
         this.waves.push(new Wave(this))
 
+        this.score = 0
+        this.isGameOver = false
+
         window.addEventListener("keydown", (e) => {
             if(!this.keys.includes(e.key)) this.keys.push(e.key)
             if(e.key === "1") this.player.shoot()
@@ -172,6 +181,8 @@ class Game {
         this.waves.forEach(wave => {
             wave.render(context)
         })
+
+        this.drawStatusText(context)
     }
 
     createProjectiles() {
@@ -194,6 +205,20 @@ class Game {
             a.y + a.height > b.y
         )
     }
+
+    drawStatusText(context) {
+        context.save()
+        context.shadowOffsetX = 2
+        context.shadowOffsetY = 2
+        context.shadow = "black"
+        context.fillText("Score: " + this.score, 20, 40)
+        if(this.isGameOver) {
+            context.textAlign = "center"
+            context.font = "100px impact"
+            context.fillText("GAME OVER!", this.width * 0.5, this.height * 0.5 )
+        }
+        context.restore()
+    }
 }
 
 window.addEventListener("load", () => {
@@ -203,6 +228,7 @@ window.addEventListener("load", () => {
     canvas.height = 800
     ctx.fillStyle="white"
     ctx.strokeStyle="white"
+    ctx.font = "30px impact"
 
     const game = new Game(canvas)
 
