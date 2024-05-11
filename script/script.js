@@ -94,14 +94,14 @@ class Enemy {
 
         // projectile collision enemies 
         this.game.projectilesPool.forEach(projectile => {
-            if(!projectile.free && this.game.checkCollision(this, projectile)) {
+            if(!projectile.free && this.game.checkCollision(this, projectile) && this.lives > 0) {
                 this.hit(1)
                 projectile.reset()
             }
         })
 
         if(this.lives < 1) {
-            this.frameX++
+            if(this.game.spriteUpdate) this.frameX++;
             if(this.frameX > this.maxFrame) {
                 this.markedForDeletion = true
                 if(!this.game.isGameOver) this.game.score+=this.maxLives
@@ -204,6 +204,10 @@ class Game {
         this.waves.push(new Wave(this))
         this.waveCount = 1
 
+        this.spriteUpdate = false
+        this.spriteTimer = 0
+        this.spriteInterval = 100
+
         this.score = 0
         this.isGameOver = false
 
@@ -221,7 +225,15 @@ class Game {
         })
     }
 
-    render(context) {
+    render(context, deltaTime) {
+        if(this.spriteTimer > this.spriteInterval) {
+            this.spriteTimer = 0
+            this.spriteUpdate = true
+        } else {
+            this.spriteTimer += deltaTime
+            this.spriteUpdate = false
+        }
+
         this.player.draw(context)
         this.player.update()
 
@@ -315,10 +327,13 @@ window.addEventListener("load", () => {
 
     const game = new Game(canvas)
 
-    function animate() {
+    let lastTime = 0
+    function animate(timeStamp) {
+        const deltaTime = timeStamp - lastTime
+        lastTime = timeStamp
         ctx.clearRect(0,0,canvas.width, canvas.height)
-        game.render(ctx)
+        game.render(ctx, deltaTime)
         requestAnimationFrame(animate)
     }
-    animate()
+    animate(0)
 })
