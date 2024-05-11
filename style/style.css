@@ -11,5 +11,6 @@
     justify-content: center;
 }
 #canvas-main {
-    border: 5px solid black;
+    outline: 5px solid black;
+    background: url(../assets/tilesets/background.png);
 }

@@ -64,6 +64,62 @@ class Projectile {
 
 class Enemy {
 
+    constructor(game, relativeX, relativeY) {
+        this.game = game
+        this.width = this.game.enemySize
+        this.height = this.game.enemySize
+        this.x = 0
+        this.y = 0
+        this.relativeX = relativeX
+        this.relativeY = relativeY
+    }
+    draw(context) {
+        context.strokeRect(this.x, this.y, this.width, this.height)
+    }
+    update(x, y) {
+        this.x = x + this.relativeX
+        this.y = y + this.relativeY
+    }
+}
+
+class Wave {
+    constructor(game) {
+        this.game = game
+        this.width = this.game.columns * this.game.enemySize
+        this.height = this.game.rows * this.game.enemySize
+        this.x = 0
+        this.y = -this.height
+        this.speedX = 3
+        this.speedY = 0
+        this.enemies = []
+        this.create()
+    }
+
+    render(context) {
+        if(this.y < 0) this.y += 5
+        this.speedY = 0
+        if(this.x < 0 || this.x > this.game.width - this.width) {
+            this.speedX *= -1
+            this.speedY = this.game.enemySize
+        }
+        this.x += this.speedX
+        this.y += this.speedY
+
+        this.enemies.forEach(enemy => {
+            enemy.update(this.x, this.y)
+            enemy.draw(context)
+        })
+    }
+
+    create() {
+        for(let y = 0; y < this.game.rows; y++) {
+            for(let x = 0; x < this.game.columns; x++) {
+                const relativeX = x * this.game.enemySize
+                const relativeY = y * this.game.enemySize
+                this.enemies.push(new Enemy(this.game, relativeX, relativeY))
+            }
+        }
+    }
 }
 
 class Game {
@@ -77,6 +133,13 @@ class Game {
         this.projectilesPool = []
         this.numberOfProjectiles = 10 
         this.createProjectiles()
+
+        this.columns = 3
+        this.rows = 3
+        this.enemySize = 60
+
+        this.waves = []
+        this.waves.push(new Wave(this))
 
         window.addEventListener("keydown", (e) => {
             if(!this.keys.includes(e.key)) this.keys.push(e.key)
@@ -95,6 +158,10 @@ class Game {
         this.projectilesPool.forEach(projectile => {
             projectile.update()
             projectile.draw(context)
+        })
+
+        this.waves.forEach(wave => {
+            wave.render(context)
         })
     }
 
@@ -115,7 +182,9 @@ window.addEventListener("load", () => {
     const canvas = document.getElementById("canvas-main")
     const ctx = canvas.getContext("2d")
     canvas.width = 600
-    canvas.height = window.innerHeight
+    canvas.height = 800
+    ctx.fillStyle="white"
+    ctx.strokeStyle="white"
 
     const game = new Game(canvas)
 
