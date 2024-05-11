@@ -144,7 +144,7 @@ class Wave {
         this.game = game
         this.width = this.game.columns * this.game.enemySize
         this.height = this.game.rows * this.game.enemySize
-        this.x = this.game.width * 0.5 - this.game.enemySize
+        this.x = this.game.width * 0.5 - this.game.enemySize * this.game.columns / 2
         this.y = -this.height
         this.speedX = Math.random() < 0.5 ? -1 : 1
         this.speedY = 0
