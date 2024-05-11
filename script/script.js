@@ -30,6 +30,12 @@ class Player {
         const projectile = this.game.getProjectile()
         if(projectile) projectile.start(this.x + this.width * 0.5, this.y)
     }
+
+    restart() {
+        this.x = this.game.width * 0.5 - this.width * 0.5
+        this.y = this.game.height - this.height 
+        this.lives = 3
+    }
 }
 
 class Projectile {
@@ -177,6 +183,7 @@ class Game {
         window.addEventListener("keydown", (e) => {
             if(!this.keys.includes(e.key)) this.keys.push(e.key)
             if(e.key === "1") this.player.shoot()
+            if(e.key === "r" && this.isGameOver) this.restart()
         })
         window.addEventListener("keyup", (e) => {
             const i = this.keys.indexOf(e.key)
@@ -252,6 +259,18 @@ class Game {
         else if (this.rows * this.enemySize < this.height * 0.6) 
             this.rows++
         this.waves.push(new Wave(this))
+    }
+    restart() {
+        this.player.restart()
+        this.columns = 3
+        this.rows = 3
+
+        this.waves = []
+        this.waves.push(new Wave(this))
+        this.waveCount = 1
+
+        this.score = 0
+        this.isGameOver = false
     }
 }
 
