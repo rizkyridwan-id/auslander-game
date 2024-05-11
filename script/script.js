@@ -116,6 +116,7 @@ class Wave {
         this.y = -this.height
         this.speedX = 3
         this.speedY = 0
+        this.nextY = 0
         this.enemies = []
         this.nextWaveTriggered = false
         this.create()
@@ -123,10 +124,11 @@ class Wave {
 
     render(context) {
         if(this.y < 0) this.y += 5
-        this.speedY = 0
+        if(this.y >= this.nextY && this.speedY) this.speedY = 0
         if(this.x < 0 || this.x > this.game.width - this.width) {
             this.speedX *= -1
-            this.speedY = this.game.enemySize
+            this.speedY = 3
+            this.nextY += this.game.enemySize
         }
         this.x += this.speedX
         this.y += this.speedY
