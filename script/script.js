@@ -72,6 +72,7 @@ class Enemy {
         this.y = 0
         this.relativeX = relativeX
         this.relativeY = relativeY
+        this.markedForDeletion = false
     }
     draw(context) {
         context.strokeRect(this.x, this.y, this.width, this.height)
@@ -79,6 +80,13 @@ class Enemy {
     update(x, y) {
         this.x = x + this.relativeX
         this.y = y + this.relativeY
+
+        this.game.projectilesPool.forEach(projectile => {
+            if(!projectile.free && this.game.checkCollision(this, projectile)) {
+                this.markedForDeletion = true
+                projectile.reset()
+            }
+        })
     }
 }
 
@@ -109,6 +117,7 @@ class Wave {
             enemy.update(this.x, this.y)
             enemy.draw(context)
         })
+        this.enemies = this.enemies.filter(enemy => !enemy.markedForDeletion)
     }
 
     create() {
@@ -175,6 +184,15 @@ class Game {
         for(let i = 0; i < this.projectilesPool.length; i++) {
             if(this.projectilesPool[i].free) return this.projectilesPool[i]
         }
+    }
+    // simple axis aligned rectangles collision
+    checkCollision(a, b) {
+        return (
+            a.x < b.x + b.width &&
+            a.x + a.width > b.x &&
+            a.y < b.y + b.height &&
+            a.y + a.height > b.y
+        )
     }
 }
 
