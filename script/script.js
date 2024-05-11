@@ -6,6 +6,7 @@ class Player {
         this.x = this.game.width * 0.5 - this.width * 0.5
         this.y = this.game.height - this.height 
         this.speed = 3
+        this.lives = 3
     }
 
     draw(context) {
@@ -81,13 +82,23 @@ class Enemy {
         this.x = x + this.relativeX
         this.y = y + this.relativeY
 
+        // projectile collision enemies 
         this.game.projectilesPool.forEach(projectile => {
             if(!projectile.free && this.game.checkCollision(this, projectile)) {
                 this.markedForDeletion = true
                 projectile.reset()
-                this.game.score++
+                if(!this.game.isGameOver) this.game.score++
             }
         })
+
+        // player collision enemies
+        if(this.game.checkCollision(this, this.game.player)) {
+            this.markedForDeletion = true
+            this.game.player.lives--
+
+            if(!this.game.isGameOver && this.game.score > 0) this.game.score--
+            if(this.game.player.lives < 1) this.game.isGameOver = true
+        }
 
         if(this.y + this.height > this.game.height) {
             this.game.isGameOver = true
@@ -106,6 +117,7 @@ class Wave {
         this.speedX = 3
         this.speedY = 0
         this.enemies = []
+        this.nextWaveTriggered = false
         this.create()
     }
 
@@ -155,6 +167,7 @@ class Game {
 
         this.waves = []
         this.waves.push(new Wave(this))
+        this.waveCount = 1
 
         this.score = 0
         this.isGameOver = false
@@ -180,6 +193,12 @@ class Game {
 
         this.waves.forEach(wave => {
             wave.render(context)
+            if(wave.enemies.length < 1 && !wave.nextWaveTriggered && !this.isGameOver) {
+                this.newWave()
+                this.waveCount++
+                wave.nextWaveTriggered = true
+                if(this.player.lives <= 7) this.player.lives++
+            }
         })
 
         this.drawStatusText(context)
@@ -212,12 +231,25 @@ class Game {
         context.shadowOffsetY = 2
         context.shadow = "black"
         context.fillText("Score: " + this.score, 20, 40)
+        context.fillText("Wave: " + this.waveCount, 20, 80)
         if(this.isGameOver) {
             context.textAlign = "center"
             context.font = "100px impact"
             context.fillText("GAME OVER!", this.width * 0.5, this.height * 0.5 )
+            context.font = "20px impact"
+            context.fillText("Press R to restart!", this.width * 0.5, this.height * 0.5 + 30)
+        }
+        for(let i =1; i<= this.player.lives; i++) {
+            context.fillRect(20 * i, 100, 10,25)
         }
         context.restore()
+    }
+    newWave() {
+        if(Math.random() < 0.6 && this.columns * this.enemySize < this.width * 0.8) 
+            this.columns++
+        else if (this.rows * this.enemySize < this.height * 0.6) 
+            this.rows++
+        this.waves.push(new Wave(this))
     }
 }
 
