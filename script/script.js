@@ -168,6 +168,7 @@ class Game {
         this.projectilesPool = []
         this.numberOfProjectiles = 10 
         this.createProjectiles()
+        this.fired = false
 
         this.columns = 3
         this.rows = 3
@@ -181,13 +182,16 @@ class Game {
         this.isGameOver = false
 
         window.addEventListener("keydown", (e) => {
+            if(e.key === "1" && !this.fired) this.player.shoot()
+            this.fired = true
+
             if(!this.keys.includes(e.key)) this.keys.push(e.key)
-            if(e.key === "1") this.player.shoot()
             if(e.key === "r" && this.isGameOver) this.restart()
         })
         window.addEventListener("keyup", (e) => {
             const i = this.keys.indexOf(e.key)
             if(i > -1) this.keys.splice(i, 1)
+            this.fired = false
         })
     }
 
