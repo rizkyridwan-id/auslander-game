@@ -126,7 +126,7 @@ class Enemy {
 
         // player collision enemies
         if(this.game.checkCollision(this, this.game.player) && this.lives) {
-            this.lives = 0
+            this.lives -= 1
             this.game.player.lives--
         }
 
@@ -148,6 +148,23 @@ class Beetlemorph extends Enemy {
         this.maxFrame = 2;
         this.lives = 1;
         this.maxLives = this.lives
+    }
+}
+
+class Rhinomorph extends Enemy {
+    constructor(game, relativeX, relativeY) {
+        super(game, relativeX, relativeY)
+        this.image = document.getElementById("rhinomorph")
+        this.frameX = 0
+        this.frameY = Math.floor(Math.random() * 3)
+        this.maxFrame = 5;
+        this.lives = 4;
+        this.maxLives = this.lives
+    }
+
+    hit(damage) {
+        this.lives -= damage
+        this.frameX = this.maxLives - Math.floor(this.lives)
     }
 }
 
@@ -189,7 +206,11 @@ class Wave {
             for(let x = 0; x < this.game.columns; x++) {
                 const relativeX = x * this.game.enemySize
                 const relativeY = y * this.game.enemySize
-                this.enemies.push(new Beetlemorph(this.game, relativeX, relativeY))
+                const enemy = y == this.game.rows - 1 || Math.random() < 0.375
+                    ? new Rhinomorph(this.game, relativeX, relativeY)
+                    : new Beetlemorph(this.game, relativeX, relativeY)
+
+                this.enemies.push(enemy)
             }
         }
     }
