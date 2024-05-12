@@ -206,7 +206,7 @@ class Wave {
             for(let x = 0; x < this.game.columns; x++) {
                 const relativeX = x * this.game.enemySize
                 const relativeY = y * this.game.enemySize
-                const enemy = y == this.game.rows - 1 || Math.random() < 0.375
+                const enemy = y == this.game.rows - 1 || Math.random() < 0.275
                     ? new Rhinomorph(this.game, relativeX, relativeY)
                     : new Beetlemorph(this.game, relativeX, relativeY)
 
