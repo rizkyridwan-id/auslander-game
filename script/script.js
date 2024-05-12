@@ -1,25 +1,37 @@
 class Player {
     constructor(game) {
         this.game = game
-        this.width = 100
-        this.height = 100
+        this.width = 140
+        this.height = 120
         this.x = this.game.width * 0.5 - this.width * 0.5
         this.y = this.game.height - this.height 
         this.speed = 3
         this.lives = 3
+        this.maxLives = 5
+        this.image = document.getElementById("player")
+        this.frameX = 0
+        this.jetImage = document.getElementById("player_jets")
+        this.jetFrameX = 1
     }
 
     draw(context) {
-        context.fillRect(this.x, this.y, this.width, this.height)
+        if(this.game.keys.includes("1")) 
+            this.frameX = 1
+        else 
+            this.frameX = 0
+
+        context.drawImage(this.jetImage, this.jetFrameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height)
+        context.drawImage(this.image, this.frameX * this.width, 0, this.width, this.height, this.x, this.y, this.width, this.height)
     }
 
     update() {
         if(this.game.keys.includes("ArrowLeft")) {
             this.x -= this.speed
-        } 
-        if(this.game.keys.includes("ArrowRight")) {
+            this.jetFrameX = 0
+        } else if(this.game.keys.includes("ArrowRight")) {
             this.x += this.speed
-        }
+            this.jetFrameX = 2
+        } else this.jetFrameX = 1
 
         // boundaries
         if (this.x < -this.width * 0.45) this.x = -this.width * 0.45
@@ -49,8 +61,12 @@ class Projectile {
         this.free = true 
     }
     draw(context) {
-        if(!this.free)
+        if(!this.free) {
+            context.save()
+            context.fillStyle = "gold"
             context.fillRect(this.x, this.y, this.width, this.height)
+            context.restore()
+        }
     }
     update() {
         if(!this.free) {
@@ -109,17 +125,13 @@ class Enemy {
         }
 
         // player collision enemies
-        if(this.game.checkCollision(this, this.game.player)) {
-            this.markedForDeletion = true
+        if(this.game.checkCollision(this, this.game.player) && this.lives) {
+            this.lives = 0
             this.game.player.lives--
-
-            if(!this.game.isGameOver && this.game.score > 0) this.game.score--
-            if(this.game.player.lives < 1) this.game.isGameOver = true
         }
 
-        if(this.y + this.height > this.game.height) {
+        if(this.y + this.height > this.game.height || this.game.player.lives < 1) {
             this.game.isGameOver = true
-            this.markedForDeletion = true
         }
     }
     hit(damage) {
@@ -238,13 +250,13 @@ class Game {
             this.spriteUpdate = false
         }
 
-        this.player.draw(context)
-        this.player.update()
-
         this.projectilesPool.forEach(projectile => {
             projectile.update()
             projectile.draw(context)
         })
+
+        this.player.draw(context)
+        this.player.update()
 
         this.waves.forEach(wave => {
             wave.render(context)
@@ -252,7 +264,7 @@ class Game {
                 this.newWave()
                 this.waveCount++
                 wave.nextWaveTriggered = true
-                if(this.player.lives <= 7) this.player.lives++
+                if(this.player.lives < this.player.maxLives) this.player.lives++
             }
         })
 
@@ -287,6 +299,7 @@ class Game {
         context.shadow = "black"
         context.fillText("Score: " + this.score, 20, 40)
         context.fillText("Wave: " + this.waveCount, 20, 80)
+        context.fillText("LIVES", this.width - 90, 40)
         if(this.isGameOver) {
             context.textAlign = "center"
             context.font = "100px impact"
@@ -294,8 +307,11 @@ class Game {
             context.font = "20px impact"
             context.fillText("Press R to restart!", this.width * 0.5, this.height * 0.5 + 30)
         }
+        for(let i =1; i<= this.player.maxLives; i++) {
+            context.strokeRect(20 * i + this.width - 140, 55, 10,25)
+        }
         for(let i =1; i<= this.player.lives; i++) {
-            context.fillRect(20 * i, 100, 10,25)
+            context.fillRect(20 * i + this.width - 140, 55, 10,25)
         }
         context.restore()
     }
