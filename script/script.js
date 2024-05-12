@@ -5,7 +5,7 @@ class Player {
         this.height = 120
         this.x = this.game.width * 0.5 - this.width * 0.5
         this.y = this.game.height - this.height 
-        this.speed = 3
+        this.speed = 6
         this.lives = 3
         this.maxLives = 5
         this.image = document.getElementById("player")
@@ -55,7 +55,7 @@ class Projectile {
     constructor() {
         this.width = 4
         this.height = 20
-        this.speed = 20
+        this.speed = 40
         this.x = 0
         this.y = 0
         this.free = true 
@@ -158,7 +158,7 @@ class Wave {
         this.height = this.game.rows * this.game.enemySize
         this.x = this.game.width * 0.5 - this.game.enemySize * this.game.columns / 2
         this.y = -this.height
-        this.speedX = Math.random() < 0.5 ? -1 : 1
+        this.speedX = Math.random() < 0.5 ? -2 : 2
         this.speedY = 0
         this.nextY = 0
         this.enemies = []
@@ -167,11 +167,11 @@ class Wave {
     }
 
     render(context) {
-        if(this.y < 0) this.y += 5
+        if(this.y < 0) this.y += 10
         if(this.y >= this.nextY && this.speedY) this.speedY = 0
         if(this.x < 0 || this.x > this.game.width - this.width) {
             this.speedX *= -1
-            this.speedY = 3
+            this.speedY = 6
             this.nextY += this.game.enemySize
         }
         this.x += this.speedX
@@ -218,7 +218,7 @@ class Game {
 
         this.spriteUpdate = false
         this.spriteTimer = 0
-        this.spriteInterval = 100
+        this.spriteInterval = 50
 
         this.score = 0
         this.isGameOver = false
@@ -242,6 +242,10 @@ class Game {
     }
 
     render(context, deltaTime) {
+        context.save()
+        context.textAlign="right"
+        context.fillText("FPS: " + Math.round(1000/deltaTime),this.width - 30, 120 )
+        context.restore()
         if(this.spriteTimer > this.spriteInterval) {
             this.spriteTimer = 0
             this.spriteUpdate = true
@@ -348,11 +352,18 @@ window.addEventListener("load", () => {
     const game = new Game(canvas)
 
     let lastTime = 0
+    let frameInterval = 25
+    let frameTimer = 0
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime
         lastTime = timeStamp
-        ctx.clearRect(0,0,canvas.width, canvas.height)
-        game.render(ctx, deltaTime)
+        if(frameTimer >= frameInterval) {
+            ctx.clearRect(0,0,canvas.width, canvas.height)
+            game.render(ctx, frameTimer)
+            frameTimer = 0
+        }
+
+        frameTimer += deltaTime
         requestAnimationFrame(animate)
     }
     animate(0)
